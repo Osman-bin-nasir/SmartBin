@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachable Machine with Webcam</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #video-container,
+        #image-container {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        video,
+        canvas,
+        img {
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            width: 321.33px;
+            height: 241.33px;
+            object-fit: cover;
+        }
+
+        #label-container {
+            margin: 20px auto;
+            padding: 10px;
+            max-width: 400px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #label-container div {
+            padding: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        #feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Teachable Machine Image Model</h1>
+    </header>
+    <main>
+        <button type="button" onclick="init()">Start</button>
+        <button type="button" onclick="startWebcam()">Open Webcam</button>
+        <button type="button" onclick="captureImage()">Capture Photo</button>
+        <input type="file" id="image-input" onchange="handleImageUpload(event)" />
+
+        <!-- Containers for webcam, captured image, and predictions -->
+        <div id="video-container">
+            <video id="webcam" autoplay playsinline></video>
+        </div>
+        <div id="image-container"></div>
+        <div id="label-container"></div>
+        <div id="feedback"></div>
+    </main>
+
+    <script type="text/javascript">
+        const URL = "https://teachablemachine.withgoogle.com/models/rJapjDmoQ/";
+
+        let model, labelContainer, maxPredictions;
+        let webcamStream, canvas;
+
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                labelContainer = document.getElementById("label-container");
+                labelContainer.innerHTML = '';
+                for (let i = 0; i < maxPredictions; i++) {
+                    labelContainer.appendChild(document.createElement("div"));
+                }
+                alert("Model loaded successfully!");
+            } catch (error) {
+                console.error("Error loading model:", error);
+                alert("Failed to load model. Please check your internet connection or model URL.");
+            }
+        }
+
+        async function startWebcam() {
+            const video = document.getElementById("webcam");
+            try {
+                webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = webcamStream;
+            } catch (err) {
+                console.error("Error accessing webcam:", err);
+                alert("Error accessing webcam. Please ensure camera permissions are granted.");
+            }
+        }
+
+        function captureImage() {
+            const video = document.getElementById("webcam");
+            if (!video.srcObject) {
+                alert("Please start the webcam first!");
+                return;
+            }
+
+            canvas = document.createElement("canvas");
+            canvas.width = 321.33;
+            canvas.height = 241.33;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageContainer = document.getElementById("image-container");
+            imageContainer.innerHTML = '';
+            const capturedImage = new Image();
+            capturedImage.src = canvas.toDataURL();
+            imageContainer.appendChild(capturedImage);
+
+            predictImage(canvas);
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const image = new Image();
+                image.src = e.target.result;
+                image.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = 321.33;
+                    canvas.height = 241.33;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                    const imageContainer = document.getElementById("image-container");
+                    imageContainer.innerHTML = '';
+                    const resizedImage = new Image();
+                    resizedImage.src = canvas.toDataURL();
+                    imageContainer.appendChild(resizedImage);
+
+                    predictImage(canvas);
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function predictImage(image) {
+            if (!model) {
+                alert("Please load the model first by clicking 'Start'!");
+                return;
+            }
+
+            try {
+                const prediction = await model.predict(image);
+                labelContainer.innerHTML = '';
+                let maxConfidence = 0;
+                let maxClass = '';
+
+                for (let i = 0; i < maxPredictions; i++) {
+                    const div = document.createElement("div");
+                    const classPrediction = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(2)}%`;
+                    div.innerHTML = classPrediction;
+                    labelContainer.appendChild(div);
+
+                    if (prediction[i].probability > maxConfidence) {
+                        maxConfidence = prediction[i].probability;
+                        maxClass = prediction[i].className;
+                    }
+                }
+
+                const feedback = document.getElementById("feedback");
+                if (maxConfidence > 0.55 ) {
+                    feedback.innerHTML = `Yes, you got points for this! (${maxClass} with ${(maxConfidence * 100).toFixed(2)}%)`;
+                    feedback.style.color = "green";
+                } else {
+                    feedback.innerHTML = "Take another photo and try again.";
+                    feedback.style.color = "red";
+                }
+            } catch (error) {
+                console.error("Error during prediction:", error);
+                alert("Failed to make predictions. Please try again.");
+            }
+        }
+
+    </script>
+</body>
+
+</html>
