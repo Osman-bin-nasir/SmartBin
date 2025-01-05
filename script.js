@@ -160,7 +160,7 @@ async function predictImage(image) {
         console.log("Confidence Level:", maxConfidence);
 
         const feedback = document.getElementById("feedback");
-        const confidenceThreshold = 0.55; // Minimum confidence threshold
+        const confidenceThreshold = 0.40; // Minimum confidence threshold
 
         // Adjusted condition to check for a minimum confidence threshold
         if (maxClass === "Correct Tras..." && maxConfidence >= confidenceThreshold) {
