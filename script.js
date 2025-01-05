@@ -9,7 +9,26 @@ const leaderboard = {};
 // Correct class for the test
 const correctClass = "Correct Trash Photo";
 
+let name;
+do {
+    name = prompt("Please enter your name to start (at least one uppercase, one lowercase, and one symbol):");
+    if (!name) {
+        alert("Name is required to proceed!");
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])/.test(name)) {
+        alert("Name must contain at least one lowercase letter, one uppercase letter, and one symbol.");
+        name = null;
+    }
+} while (!name);
 async function init() {
+    // Ask for the user's name before proceeding
+    if (!name) {
+        alert("Name is required to proceed!");
+        return;
+    }
+
+    // Save the user's name in a global variable
+    window.userName = name;
+
     const modelURL = `${URL}model.json`;
     const metadataURL = `${URL}metadata.json`;
 
@@ -30,6 +49,7 @@ async function init() {
 
     await populateCameraOptions();
 }
+
 
 async function populateCameraOptions() {
     const cameraSelect = document.getElementById("camera-select");
@@ -167,7 +187,7 @@ async function predictImage(image) {
             feedback.innerHTML = `Detected: ${maxClass} (${(maxConfidence * 100).toFixed(2)}%)`;
             feedback.style.color = "white";
 
-            const name = prompt("Enter your name for the leaderboard:");
+            // const name = prompt("Enter your name for the leaderboard:");
             if (name) {
                 leaderboard[name] = (leaderboard[name] || 0) + 1;
                 updateLeaderboard();
