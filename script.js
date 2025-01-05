@@ -87,6 +87,7 @@ async function startWebcam() {
         return;
     }
 
+    // Stop any existing stream
     if (webcamStream) {
         webcamStream.getTracks().forEach(track => track.stop());
     }
@@ -97,10 +98,11 @@ async function startWebcam() {
         });
         video.srcObject = webcamStream;
     } catch (err) {
-        console.error("Error accessing webcam:", err);
-        alert("Error accessing webcam. Please ensure camera permissions are granted.");
+        console.error("Webcam access error:", err.message);
+        alert("Error accessing webcam. Please check your permissions or try a different browser.");
     }
 }
+
 
 function captureImage() {
     const video = document.getElementById("webcam");
