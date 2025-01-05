@@ -1,0 +1,118 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    text-align: center;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+}
+
+main {
+    padding: 20px;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#video-container,
+#image-container {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+}
+
+video,
+canvas,
+img {
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    width: 321.33px;
+    height: 241.33px;
+    object-fit: cover;
+}
+
+#label-container {
+    margin: 20px auto;
+    padding: 10px;
+    max-width: 400px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#label-container div {
+    padding: 5px;
+    font-size: 16px;
+    text-align: left;
+}
+
+#feedback {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Leaderboard Styles */
+h2 {
+    margin-top: 30px;
+    font-size: 24px;
+    color: #333;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#leaderboard {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px auto;
+    max-width: 400px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#leaderboard li {
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #4CAF50;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+}
+
+#leaderboard li:last-child {
+    border-bottom: none;
+}
+
+#leaderboard li:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+#leaderboard li:nth-child(even) {
+    background-color: #e9f7e9;
+}
+
+#leaderboard li:hover {
+    background-color: #dff0d8;
+    transition: background-color 0.3s ease;
+}
