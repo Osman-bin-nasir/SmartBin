@@ -173,7 +173,7 @@ async function predictImage(image) {
                 updateLeaderboard();
             }
         } else {
-            feedback.innerHTML = `Take another photo and try again. Detected: ${maxClass} (${(maxConfidence * 100).toFixed(2)}%)`;
+            feedback.innerHTML = `The above picture could not be identified as trash. Please try again. Detected: ${maxClass} (${(maxConfidence * 100).toFixed(2)}%)`;
             feedback.style.color = "red";
         }
     } catch (error) {
