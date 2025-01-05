@@ -9,7 +9,7 @@
     <script
         src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <style>
-        body {
+         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
@@ -92,9 +92,9 @@
         <button type="button" onclick="init()">Start</button>
         <button type="button" onclick="startWebcam()">Open Webcam</button>
         <button type="button" onclick="captureImage()">Capture Photo</button>
+        <select id="camera-select"></select>
         <input type="file" id="image-input" onchange="handleImageUpload(event)" />
 
-        <!-- Containers for webcam, captured image, and predictions -->
         <div id="video-container">
             <video id="webcam" autoplay playsinline></video>
         </div>
@@ -108,6 +108,7 @@
 
         let model, labelContainer, maxPredictions;
         let webcamStream, canvas;
+        let videoDeviceId = null;
 
         async function init() {
             const modelURL = URL + "model.json";
@@ -127,12 +128,49 @@
                 console.error("Error loading model:", error);
                 alert("Failed to load model. Please check your internet connection or model URL.");
             }
+
+            await populateCameraOptions();
+        }
+
+        async function populateCameraOptions() {
+            const cameraSelect = document.getElementById("camera-select");
+            cameraSelect.innerHTML = "";
+
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === "videoinput");
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement("option");
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                if (videoDevices.length > 0) {
+                    videoDeviceId = videoDevices[0].deviceId; // Default to the first camera
+                }
+
+                cameraSelect.addEventListener("change", (event) => {
+                    videoDeviceId = event.target.value;
+                    startWebcam();
+                });
+            } catch (error) {
+                console.error("Error accessing camera devices:", error);
+                alert("Failed to access camera devices.");
+            }
         }
 
         async function startWebcam() {
             const video = document.getElementById("webcam");
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(track => track.stop());
+            }
+
             try {
-                webcamStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                webcamStream = await navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined }
+                });
                 video.srcObject = webcamStream;
             } catch (err) {
                 console.error("Error accessing webcam:", err);
@@ -214,7 +252,7 @@
                 }
 
                 const feedback = document.getElementById("feedback");
-                if (maxConfidence > 0.55 ) {
+                if (maxConfidence > 0.55) {
                     feedback.innerHTML = `Yes, you got points for this! (${maxClass} with ${(maxConfidence * 100).toFixed(2)}%)`;
                     feedback.style.color = "green";
                 } else {
@@ -226,7 +264,6 @@
                 alert("Failed to make predictions. Please try again.");
             }
         }
-
     </script>
 </body>
 
